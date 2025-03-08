@@ -1,0 +1,59 @@
+- name: Install required packages
+  yum:
+    name:
+      - wget
+      - tar
+      - httpd
+    state: present
+
+- name: Download Prometheus
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v2.37.0/prometheus-2.37.0.linux-amd64.tar.gz"
+    dest: "/tmp/prometheus.tar.gz"
+
+- name: Extract Prometheus
+  unarchive:
+    src: "/tmp/prometheus.tar.gz"
+    dest: "/opt/"
+    remote_src: yes
+
+- name: Move Prometheus binaries
+  copy:
+    src: "/opt/prometheus-2.37.0.linux-amd64/"
+    dest: "/etc/prometheus/"
+    remote_src: yes
+
+- name: Create Prometheus service file
+  copy:
+    dest: "/etc/systemd/system/prometheus.service"
+    content: |
+      [Unit]
+      Description=Prometheus
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      User=root
+      ExecStart=/etc/prometheus/prometheus --config.file=/etc/prometheus/prometheus.yml
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart Prometheus
+
+- name: Enable and start Prometheus service
+  systemd:
+    name: prometheus
+    enabled: yes
+    state: started
+
+- name: Install Grafana
+  yum:
+    name: grafana
+    state: present
+
+- name: Enable and start Grafana
+  systemd:
+    name: grafana-server
+    enabled: yes
+    state: started

@@ -1,0 +1,44 @@
+---
+- name: Configuration management
+  hosts: all
+  become: true
+  tasks:
+    - name: installation the below packages
+      yum:
+         name:
+           - git
+           - vim
+           - curl
+           - wget
+           - tree
+         state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Configuration the below packages
+      apt:
+        name:
+          - git
+          - tree
+          - wget
+          - vim
+        state: present
+      when: ansible_os_family == "Debian"
+    - name: create system user
+      user:
+        name: devops
+        groups: sudo
+        shell: /bin/bash
+ 
+- name: Disable root login
+  lineinfile:
+     path: /etc/ssh/sshd_config
+     regexp: '^PermitRootLogin'
+     line: 'PermitRootLogin no'
+     state: present
+  notify: Restart SSH 
+
+  handlers:
+    name: Restart SSH
+    service:
+       name: SSH
+       state: restarted

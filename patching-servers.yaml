@@ -1,0 +1,16 @@
+---
+- name: Linux system patch update
+  hosts: all
+  become: true
+  tasks:
+    - name: Upgrade all packages (Debian)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_os_family == 'Debian'
+    - name: Upgrade all packages (RHEL)
+      yum:
+        name: '*'
+        state: latest
+      when: ansible_os_family == 'RedHat'
+            

@@ -1,0 +1,25 @@
+---
+- name: MySQL Database deployment
+  hosts: databases
+  become: true
+  tasks:
+    - name: Install MySQL
+      yum:
+        name: mysql-server
+        state: present
+    - name: Start MySQL servive
+      service:
+        name: mysqld 
+        state: started
+        enable: yes
+    - name: Create MySQL Database
+      mysql_db:
+         name: salesdb
+         state: present
+    - name: Create MySQL user
+      mysql_user:
+         name: appuser
+         password: Grameen@@12345
+         priv: "salesdb.*:ALL"
+         state: present
+             

@@ -1,0 +1,29 @@
+---
+- name: Setup ELK Stack
+  hosts: elk_servers
+  become: yes
+  tasks:
+    - name: Install ElasticSearch
+      yum:
+        name: elasticsearch 
+        state: present
+    - name: Install Logstash
+      yum:
+        name: logstash 
+        state: present
+    - name: Install Kibana
+      yum:
+        name: kibana 
+        state: present
+    
+    - name: Start services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - elasticsearch
+        - logstash
+        - kibana
+          
+
