@@ -1,0 +1,4 @@
+[linux_servers]
+datacontroller01 ansible_host=192.168.1.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa
+datacontroller02 ansible_host=192.168.1.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa
+

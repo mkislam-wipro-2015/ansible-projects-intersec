@@ -1,0 +1,45 @@
+---
+- name: Linux System Health Check Automation
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+
+    - name: Check CPU Usage
+      shell: "top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'"
+      register: cpu_usage
+
+    - name: Check Memory Usage
+      shell: "free -m | awk 'NR==2{printf \"%.2f\", $3*100/$2 }'"
+      register: mem_usage
+
+    - name: Check Disk Usage
+      shell: "df -h / | awk 'NR==2 {print $5}'"
+      register: disk_usage
+
+    - name: Get Load Average
+      shell: "uptime | awk -F'load average:' '{ print $2 }'"
+      register: load_avg
+
+    - name: Get Running Services
+      shell: "systemctl list-units --type=service --state=running | wc -l"
+      register: running_services
+
+    - name: Check Network Connectivity (Ping Google DNS)
+      shell: "ping -c 2 8.8.8.8 > /dev/null 2>&1 && echo 'OK' || echo 'FAIL'"
+      register: network_status
+
+    - name: Generate System Health Report
+      copy:
+        content: |
+          ========== System Health Report ==========
+          Host: {{ ansible_hostname }}
+          CPU Usage: {{ cpu_usage.stdout }}%
+          Memory Usage: {{ mem_usage.stdout }}%
+          Disk Usage: {{ disk_usage.stdout }}
+          Load Average: {{ load_avg.stdout }}
+          Running Services: {{ running_services.stdout }}
+          Network Connectivity: {{ network_status.stdout }}
+          =========================================
+        dest: "/tmp/system_health_report.txt"
+      delegate_to: localhost
