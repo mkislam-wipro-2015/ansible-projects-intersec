@@ -1,0 +1,2 @@
+---
+patch_reboot_timeout: 600  # Timeout for reboot tasks

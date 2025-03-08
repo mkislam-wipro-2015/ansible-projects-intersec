@@ -1,0 +1,44 @@
+---
+- name: Update all packages to the latest version
+  yum:
+    name: '*'
+    state: latest
+  when: ansible_os_family == "RedHat"  # For RHEL/CentOS
+  notify:
+    - Reboot the system if needed
+
+- name: Update apt packages to the latest version
+  apt:
+    update_cache: yes
+    upgrade: dist
+    state: latest
+  when: ansible_os_family == "Debian"  # For Ubuntu
+  notify:
+    - Reboot the system if needed
+
+- name: Check if system requires a reboot
+  command: needs-restarting -r
+  register: reboot_needed
+  when: ansible_os_family == "RedHat"
+  failed_when: false
+  changed_when: false
+
+- name: Reboot the system if required (RedHat/CentOS)
+  reboot:
+    reboot_timeout: 600
+  when: reboot_needed.rc == 1
+  notify:
+    - Notify about successful patching
+  become: yes
+
+- name: Reboot the system if required (Ubuntu)
+  reboot:
+    reboot_timeout: 600
+  when: ansible_facts['pkg_mgr'] == "apt" and reboot_needed.rc == 1
+  notify:
+    - Notify about successful patching
+  become: yes
+
+- name: Notify about patching success
+  debug:
+    msg: "Patching and reboot (if necessary) completed successfully."

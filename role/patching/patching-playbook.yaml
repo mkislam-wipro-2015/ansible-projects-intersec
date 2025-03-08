@@ -1,0 +1,6 @@
+---
+- name: Patching all Linux servers
+  hosts: all  # This targets all your servers in your inventory
+  become: yes  # Use sudo privileges to perform the patching
+  roles:
+    - patching  # Use the patching role defined above
